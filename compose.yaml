@@ -1,0 +1,28 @@
+services:
+  api:
+    build: .
+    volumes:
+      - .:/var/www/html
+    command: ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000", "--no-reload"]
+    ports:
+      - "127.0.0.1:8080:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: crm
+      POSTGRES_USER: crm
+      POSTGRES_PASSWORD: crm_local
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "crm", "-d", "crm"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+volumes:
+  postgres_data:
