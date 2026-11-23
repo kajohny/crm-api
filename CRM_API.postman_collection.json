@@ -1,0 +1,482 @@
+{
+  "info": {
+    "_postman_id": "a787d8bb-a20a-4b9c-a1c8-ce7821cdd458",
+    "name": "CRM API — Laravel PostgreSQL",
+    "description": "Примеры запросов к тестовой CRM. Запустите сверху вниз после docker compose up --build. Два менеджера создаются сидером автоматически. Даты встреч указаны в UTC, локальное время Алматы — UTC+5.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 — Создать компанию 1",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/companies",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Company 1\",\n  \"bin\": \"{{binOne}}\",\n  \"phone\": \"+77000000001\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('binOne', '1' + String(Math.floor(Math.random() * 1e11)).padStart(11, '0'));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "  pm.collectionVariables.set('companyOneId', pm.response.json().id);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 — Создать компанию 2",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/companies",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Company 2\",\n  \"bin\": \"{{binTwo}}\",\n  \"phone\": \"+77000000002\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('binTwo', '2' + String(Math.floor(Math.random() * 1e11)).padStart(11, '0'));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "  pm.collectionVariables.set('companyTwoId', pm.response.json().id);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 — Список новых компаний",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/companies?status=new&page=1"
+      }
+    },
+    {
+      "name": "04 — Зарегистрировать звонок no_answer",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/calls",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"company_id\": {{companyOneId}},\n  \"result\": \"no_answer\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "05 — Фильтр по последнему звонку no_answer",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/companies?status=no_answer&page=1"
+      }
+    },
+    {
+      "name": "06 — Назначить встречу 10:00 Алматы",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/meetings",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"company_id\": {{companyOneId}},\n  \"manager_id\": {{managerOneId}},\n  \"starts_at\": \"2027-11-24T05:00:00Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "  pm.collectionVariables.set('meetingOneId', pm.response.json().id);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 — Звонок meeting_set с созданной встречей",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/calls",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"company_id\": {{companyOneId}},\n  \"result\": \"meeting_set\",\n  \"meeting_id\": {{meetingOneId}}\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "08 — Конфликт: активная встреча той же организации (409)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/meetings",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"company_id\": {{companyOneId}},\n  \"manager_id\": {{managerTwoId}},\n  \"starts_at\": \"2027-11-24T08:00:00Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "09 — Конфликт: пересечение у менеджера (409)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/meetings",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"company_id\": {{companyTwoId}},\n  \"manager_id\": {{managerOneId}},\n  \"starts_at\": \"2027-11-24T05:30:00Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "10 — Вторая встреча без пересечения: 11:00 Алматы",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/meetings",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"company_id\": {{companyTwoId}},\n  \"manager_id\": {{managerOneId}},\n  \"starts_at\": \"2027-11-24T06:00:00Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "  pm.collectionVariables.set('meetingTwoId', pm.response.json().id);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "11 — Расписание менеджера на день",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/managers/{{managerOneId}}/schedule?date=2027-11-24"
+      }
+    },
+    {
+      "name": "12 — Перенос встречи на 12:00 Алматы",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/meetings/{{meetingOneId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"starts_at\": \"2027-11-24T07:00:00Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "13 — Отмена встречи",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/meetings/{{meetingOneId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"cancelled\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "14 — Список компаний со статусом meeting_set",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/companies?status=meeting_set&page=1"
+      }
+    },
+    {
+      "name": "15 — Ошибка границы дня: 17:30 Алматы (422)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/meetings",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"company_id\": {{companyOneId}},\n  \"manager_id\": {{managerOneId}},\n  \"starts_at\": \"2027-11-24T12:30:00Z\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "16 — Ошибка: meeting_set без meeting_id (422)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Accept",
+            "value": "application/json"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/calls",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"company_id\": {{companyOneId}},\n  \"result\": \"meeting_set\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "managerOneId",
+      "value": "1"
+    },
+    {
+      "key": "managerTwoId",
+      "value": "2"
+    },
+    {
+      "key": "companyOneId",
+      "value": ""
+    },
+    {
+      "key": "companyTwoId",
+      "value": ""
+    },
+    {
+      "key": "meetingOneId",
+      "value": ""
+    },
+    {
+      "key": "meetingTwoId",
+      "value": ""
+    },
+    {
+      "key": "binOne",
+      "value": ""
+    },
+    {
+      "key": "binTwo",
+      "value": ""
+    }
+  ]
+}
