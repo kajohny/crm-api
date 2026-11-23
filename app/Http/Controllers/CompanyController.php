@@ -19,7 +19,9 @@ class CompanyController extends Controller
             $request->only(['name', 'bin', 'phone'])
         );
 
-        return response()->noContent();
+        return response()->json([
+            'id' => $company->id,
+        ], 201);
     }
 
     public function index(Request $request)
